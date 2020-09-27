@@ -2,9 +2,9 @@
 
 OSNAME := $(shell uname)
 
-WARNINGS =										\
-	-Wno-unused-function						\
-	-Wno-deprecated-declarations                \
+WARNINGS =                                      \
+	-Wno-unused-function                    \
+	-Wno-deprecated-declarations            \
 	-Wno-implicit-fallthrough
 
 CXXFLAGS = -g -O -std=c++2a -W -Wall $(WARNINGS)

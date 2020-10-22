@@ -7,12 +7,16 @@
 #include <defs.hh>
 
 #include <cctype>
+
+#include <map>
+#include <string>
+
 #include <boost/iostreams/concepts.hpp>
 
 namespace ypdf::iostreams {
 
 struct lzw_output_filter_t
-    : boost::iostreams::output_filter, lzw_filter_base_t
+    : ::boost::iostreams::output_filter, lzw_filter_base_t
 {
     constexpr static size_t max_bits = 12;
 
@@ -24,14 +28,10 @@ struct lzw_output_filter_t
     template< typename Sink >
     bool put(Sink &dst, char c) {
         if (!header) {
-            namespace bios = boost::iostreams;
+            namespace bios = ::boost::iostreams;
 
             bios::put(dst, 0x1F);
             bios::put(dst, 0x9D);
-
-            ASSERT(0 == (max_bits & (max_bits - 1)));
-            ASSERT(bits <= max_bits);
-
             bios::put(dst, 0x80 | max_bits);
 
             header = true;
@@ -41,34 +41,37 @@ struct lzw_output_filter_t
 
         if (table.end() == table.find(string)) {
             if ((1UL << max_bits) > next)
-                table[s] = next++;
+                table[string] = next++;
 
             string.pop_back();
 
             do_put(table.at(string), bits);
-            flush(7);
+            flush(dst, 7);
 
             if (bits < max_bits && (1UL << bits) < next)
                 ++bits;
 
-            string = *iter;
+            string = c;
         }
+
+        return true;
     }
 
     template< typename Sink >
-    void close(Sink &) {
-        flush(0);
+    void close(Sink &dst) {
+        flush(dst, 0);
     }
 
 private:
     void do_put(size_t value, size_t bits) {
-        buf |= (value << ((sizeof buf << 3) - pending));
+        buf |= (value << ((sizeof buf << 3) - pending - bits));
         pending += bits;
     }
 
-    void flush(size_t threshold) {
+    template< typename Sink >
+    void flush(Sink &dst, size_t threshold) {
         for (; pending > threshold; pending -= (std::min)(8UL, pending)) {
-            namespace bios = boost::iostreams;
+            namespace bios = ::boost::iostreams;
 
             const auto c = buf >> ((sizeof buf << 3) - 8);
             bios::put(dst, c);

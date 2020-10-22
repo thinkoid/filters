@@ -1,7 +1,7 @@
 // -*- mode: c++; -*-
 
-#ifndef YPDF_IOSTREAMS_LZW_INPUT_FILTER_HH
-#define YPDF_IOSTREAMS_LZW_INPUT_FILTER_HH
+#ifndef YPDF_IOSTREAMS_LZW_FILTER_BASE_HH
+#define YPDF_IOSTREAMS_LZW_FILTER_BASE_HH
 
 #include <defs.hh>
 #include <lzw_filter_base.hh>
@@ -10,11 +10,10 @@ namespace ypdf::iostreams {
 
 struct lzw_filter_base_t
 {
-    constexpr static size_t min_bits =  9;
-    constexpr static size_t max_bits = 12;
+    constexpr static size_t min_bits =   9;
+    constexpr static size_t max_bits =  12;
 
-    constexpr static size_t clear_code = 256;
-    constexpr static size_t   eod_code = 257;
+    constexpr static size_t eod_code = 256;
 
 public:
     lzw_filter_base_t()
@@ -27,4 +26,4 @@ protected:
 
 } // namespace ypdf::iostreams
 
-#endif // YPDF_IOSTREAMS_LZW_INPUT_FILTER_HH
+#endif // YPDF_IOSTREAMS_LZW_FILTER_BASE_HH

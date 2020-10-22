@@ -1,29 +1,32 @@
 // -*- mode: c++; -*-
 
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE streams
-
 #include <cassert>
 
 #include <iostream>
 
-#include <boost/type_index.hpp>
-#include <boost/test/unit_test.hpp>
-namespace utf = boost::unit_test;
-
-#include <boost/test/data/test_case.hpp>
-#include <boost/test/data/monomorphic.hpp>
-namespace data = boost::unit_test::data;
-
+#include <boost/iostreams/device/file.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-namespace io = boost::iostreams;
+namespace io = ::boost::iostreams;
 
 #include <lzw_input_filter.hh>
 #include <lzw_output_filter.hh>
 
 #define UNUSED(x) ((void)x)
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+        return 2;
+
+    {
+        io::filtering_istream in;
+
+        in.push(ypdf::iostreams::lzw_input_filter_t());
+        in.push(::io::file_source(argv[1]));
+
+        for (int c; EOF != (c = ::io::get(in)); )
+            std::cout.put(c);
+    }
+
     return 0;
 }

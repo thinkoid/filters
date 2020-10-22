@@ -14,7 +14,7 @@ namespace endian = boost::endian;
 
 namespace ypdf::iostreams {
 
-struct ascii85_output_filter_t : public boost::iostreams::output_filter
+struct ascii85_output_filter_t : public ::boost::iostreams::output_filter
 {
     template< typename Sink >
     bool put(Sink &dst, char c)
@@ -33,21 +33,21 @@ private:
     template< typename Sink >
     bool endl(Sink &dst)
     {
-        namespace bios = boost::iostreams;
+        namespace bios = ::boost::iostreams;
         return n_ < 72 || (n_ = 0, 1 == bios::put(dst, '\n'));
     }
 
     template< typename Sink >
     std::streamsize write(Sink &dst, const char *s, std::streamsize n)
     {
-        namespace bios = boost::iostreams;
+        namespace bios = ::boost::iostreams;
         return n_ += n, bios::write(dst, s, n);
     }
 
     template< typename Sink >
     std::streamsize write(Sink &dst, char c)
     {
-        namespace bios = boost::iostreams;
+        namespace bios = ::boost::iostreams;
         return ++n_, bios::put(dst, c);
     }
 

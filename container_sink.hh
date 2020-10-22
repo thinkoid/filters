@@ -12,7 +12,7 @@ namespace ypdf {
 namespace iostreams {
 
 template< typename Container >
-struct container_sink_t : public boost::iostreams::sink
+struct container_sink_t : public ::boost::iostreams::sink
 {
     using container_type = Container;
     using char_type = typename Container::value_type;

@@ -12,7 +12,7 @@
 namespace ypdf {
 namespace iostreams {
 
-struct asciihex_input_filter_t : public boost::iostreams::input_filter
+struct asciihex_input_filter_t : public ::boost::iostreams::input_filter
 {
     template< typename Source >
     int get(Source& src)
@@ -20,7 +20,7 @@ struct asciihex_input_filter_t : public boost::iostreams::input_filter
         if (eof_)
             return EOF;
 
-        namespace bios = boost::iostreams;
+        namespace bios = ::boost::iostreams;
 
         int c;
         while (EOF != (c = bios::get(src)) && std::isspace(c)) ;

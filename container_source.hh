@@ -12,7 +12,7 @@ namespace ypdf {
 namespace iostreams {
 
 template< typename Container >
-struct container_source_t : public boost::iostreams::source
+struct container_source_t : public ::boost::iostreams::source
 {
     using container_type = Container;
     using pos_type = typename Container::size_type;

@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include <boost/iostreams/filtering_stream.hpp>
-namespace io = boost::iostreams;
+namespace io = ::boost::iostreams;
 
 #include <ascii85_input_filter.hh>
 #include <ascii85_output_filter.hh>

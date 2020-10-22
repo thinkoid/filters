@@ -16,7 +16,7 @@ namespace utf = boost::unit_test;
 namespace data = boost::unit_test::data;
 
 #include <boost/iostreams/filtering_stream.hpp>
-namespace io = boost::iostreams;
+namespace io = ::boost::iostreams;
 
 #include <container_sink.hh>
 #include <asciihex_output_filter.hh>
@@ -46,7 +46,7 @@ BOOST_DATA_TEST_CASE(
     for (auto c : output)
         str.put(c);
 
-    boost::iostreams::close(str);
+    ::boost::iostreams::close(str);
 
     BOOST_TEST(result == buf);
 

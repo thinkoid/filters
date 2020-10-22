@@ -10,7 +10,7 @@ namespace endian = boost::endian;
 
 namespace ypdf::iostreams {
 
-struct ascii85_input_filter_t : public boost::iostreams::input_filter
+struct ascii85_input_filter_t : public ::boost::iostreams::input_filter
 {
     template< typename Source >
     int get(Source &src)
@@ -36,7 +36,7 @@ private:
     template< typename Source >
     int do_get(Source &src)
     {
-        namespace bios = boost::iostreams;
+        namespace bios = ::boost::iostreams;
 
         static const char arr[256] = {
             //  1   2   3   4   5   6   7   8   9   A   B   C   D   E   F

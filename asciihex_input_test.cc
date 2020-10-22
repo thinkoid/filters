@@ -16,7 +16,7 @@ namespace utf = boost::unit_test;
 namespace data = boost::unit_test::data;
 
 #include <boost/iostreams/filtering_stream.hpp>
-namespace io = boost::iostreams;
+namespace io = ::boost::iostreams;
 
 #include <asciihex_input_filter.hh>
 #include <container_source.hh>

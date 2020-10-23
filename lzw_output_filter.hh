@@ -59,6 +59,9 @@ struct lzw_output_filter_t
 
     template< typename Sink >
     void close(Sink &dst) {
+        if (!string.empty())
+            do_put(table.at(string), bits);
+
         flush(dst, 0);
     }
 

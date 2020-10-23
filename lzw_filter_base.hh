@@ -10,14 +10,19 @@ namespace ypdf::iostreams {
 
 struct lzw_filter_base_t
 {
-    constexpr static size_t min_bits =   9;
-    constexpr static size_t max_bits =  12;
+    using parameter_type = size_t;
 
-    constexpr static size_t eod_code = 256;
+    constexpr static parameter_type min_bits =   9;
+    constexpr static parameter_type max_bits =  12;
+
+    using code_type = size_t;
+
+    constexpr static code_type   eod_code = 256;
+    constexpr static code_type first_code = eod_code + 1;
 
 public:
     lzw_filter_base_t()
-        : buf(), bits(min_bits), pending(), next(eod_code + 1)
+        : buf{ }, bits{ min_bits }, pending{ }, next{ first_code }
     { }
 
 protected:

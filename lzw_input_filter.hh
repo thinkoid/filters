@@ -14,26 +14,17 @@ namespace ypdf::iostreams {
 struct lzw_input_filter_t
     : ::boost::iostreams::input_filter, lzw_filter_base_t
 {
-    lzw_input_filter_t() : cur(), prev(), pos(), header(), eof() {
-        for (size_t i = 0; i < 256; ++i)
-            table[i] = std::string(1UL, i);
-    }
+    lzw_input_filter_t()
+        : table(make_table()), cur{ }, prev{ }, pos{ }, header{ }, eof{ }
+    { }
 
     template< typename Source >
     int get(Source &src) {
         if (eof)
             return EOF;
 
-        namespace bios = ::boost::iostreams;
-
         if (!header) {
-            int a, b, c;
-
-            if (EOF == (a = bios::get(src)) || a != 0x1F ||
-                EOF == (b = bios::get(src)) || b != 0x9D ||
-                EOF == (c = bios::get(src)) || c != (0x80 | max_bits))
-                throw std::runtime_error("invalid LZW header");
-
+            get_header(src);
             header = true;
         }
 
@@ -43,17 +34,17 @@ struct lzw_input_filter_t
             if (size_t(EOF) == code)
                 return eof = true, EOF;
 
-            if (table.find(code) == table.end()) {
-                ASSERT(prev);
+            {
+                auto iter = table.find(code);
 
-                const auto &s = *prev;
-                ASSERT(!s.empty());
+                if (iter == table.end()) {
+                    ASSERT(prev && !prev->empty());
+                    iter = table.emplace(code, *prev + (*prev)[0]).first;
+                }
 
-                table[code] = s + s[0];
+                cur = &iter->second;
+                pos = 0;
             }
-
-            cur = &table[code];
-            pos = 0;
 
             if (bits < max_bits && (1UL << bits) - 1 <= next)
                 ++bits;
@@ -64,7 +55,7 @@ struct lzw_input_filter_t
             prev = cur;
         }
 
-        ASSERT(pos < cur->size());
+        ASSERT(cur && pos < cur->size());
         const int c = static_cast< unsigned char >(cur->at(pos));
 
         if (++pos >= cur->size()) {
@@ -83,6 +74,15 @@ struct lzw_input_filter_t
     }
 
 private:
+    static std::map< size_t, std::string > make_table() {
+        std::map< size_t, std::string > table;
+
+        for (size_t i = 0; i < 256; ++i)
+            table[i] = std::string(1UL, i);
+
+        return table;
+    }
+
     template< typename Source >
     size_t do_get(Source &src) {
         namespace bios = ::boost::iostreams;
@@ -107,11 +107,23 @@ private:
         return code;
     }
 
+    template< typename Source >
+    void get_header(Source &src) {
+        namespace bios = ::boost::iostreams;
+
+        int a, b, c;
+
+        if (EOF == (a = bios::get(src)) || a != 0x1F ||
+            EOF == (b = bios::get(src)) || b != 0x9D ||
+            EOF == (c = bios::get(src)) || c != (0x80 | max_bits))
+            throw std::runtime_error("invalid LZW header");
+    }
+
 private:
     std::map< size_t, std::string > table;
 
     std::string *cur, *prev;
-    std::size_t pos;
+    std::size_t pos, count;
 
     bool header, eof;
 };

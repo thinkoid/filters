@@ -39,9 +39,9 @@ struct lzw_output_filter_t
                 table[string] = next++;
 
             string.pop_back();
-
             do_put(table.at(string), bits);
-            flush(dst, 7);
+
+            flush(dst);
 
             if (bits < max_bits && (1UL << bits) < next)
                 ++bits;
@@ -57,7 +57,7 @@ struct lzw_output_filter_t
         if (!string.empty())
             do_put(table.at(string), bits);
 
-        flush(dst, 0);
+        purge(dst);
 
         reset();
     }
@@ -79,7 +79,7 @@ private:
     }
 
     template< typename Sink >
-    void flush(Sink &dst, size_t threshold) {
+    void do_flush(Sink &dst, size_t threshold) {
         for (; pending > threshold; pending -= (std::min)(8UL, pending)) {
             namespace bios = ::boost::iostreams;
 
@@ -88,6 +88,16 @@ private:
 
             buf <<= 8;
         }
+    }
+
+    template< typename Sink >
+    void flush(Sink &dst) {
+        do_flush(dst, 7);
+    }
+
+    template< typename Sink >
+    void purge(Sink &dst) {
+        do_flush(dst, 0);
     }
 
     void reset() {

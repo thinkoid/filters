@@ -68,9 +68,7 @@ struct lzw_input_filter_t
 
     template< typename Source >
     void close(Source &) {
-        cur = prev = 0;
-        pos = 0;
-        eof = true;
+        reset();
     }
 
 private:
@@ -119,11 +117,22 @@ private:
             throw std::runtime_error("invalid LZW header");
     }
 
+    void reset() {
+        lzw_filter_base_t::reset();
+
+        table = make_table();
+
+        cur = prev = 0;
+        pos = 0;
+
+        header = eof = false;
+    }
+
 private:
     std::map< size_t, std::string > table;
 
     std::string *cur, *prev;
-    std::size_t pos, count;
+    std::size_t pos;
 
     bool header, eof;
 };

@@ -26,6 +26,12 @@ public:
     { }
 
 protected:
+    void reset() {
+        buf = pending = 0;
+        bits = min_bits;
+        next = first_code;
+    }
+
     size_t buf, bits, pending, next;
 };
 

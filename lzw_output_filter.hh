@@ -18,12 +18,7 @@ namespace ypdf::iostreams {
 struct lzw_output_filter_t
     : ::boost::iostreams::output_filter, lzw_filter_base_t
 {
-    constexpr static size_t max_bits = 12;
-
-    explicit lzw_output_filter_t() : header() {
-        for (size_t i = 0; i < 256; ++i)
-            table[std::string(1, i)] = i;
-    }
+    explicit lzw_output_filter_t() : table(make_table()), header{ } {  }
 
     template< typename Sink >
     bool put(Sink &dst, char c) {
@@ -63,9 +58,21 @@ struct lzw_output_filter_t
             do_put(table.at(string), bits);
 
         flush(dst, 0);
+
+        reset();
     }
 
 private:
+    static std::map< std::string, size_t >
+    make_table() {
+        std::map< std::string, size_t > table;
+
+        for (size_t i = 0; i < 256; ++i)
+            table[std::string(1, i)] = i;
+
+        return table;
+    }
+
     void do_put(size_t value, size_t bits) {
         buf |= (value << ((sizeof buf << 3) - pending - bits));
         pending += bits;
@@ -81,6 +88,15 @@ private:
 
             buf <<= 8;
         }
+    }
+
+    void reset() {
+        lzw_filter_base_t::reset();
+
+        table = make_table();
+
+        string = { };
+        header = { };
     }
 
 private:

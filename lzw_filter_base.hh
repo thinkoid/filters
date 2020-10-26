@@ -17,22 +17,9 @@ struct lzw_filter_base_t
 
     using code_type = size_t;
 
-    constexpr static code_type   eod_code = 256;
-    constexpr static code_type first_code = eod_code + 1;
-
-public:
-    lzw_filter_base_t()
-        : buf{ }, bits{ min_bits }, pending{ }, next{ first_code }
-    { }
-
-protected:
-    void reset() {
-        buf = pending = 0;
-        bits = min_bits;
-        next = first_code;
-    }
-
-    size_t buf, bits, pending, next;
+    constexpr static code_type clear_code = 256;
+    constexpr static code_type   eod_code = 257;
+    constexpr static code_type first_code = 258;
 };
 
 } // namespace ypdf::iostreams

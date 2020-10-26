@@ -5,33 +5,20 @@
 #define YPDF_IOSTREAMS_LZW_OUTPUT_FILTER_HH
 
 #include <defs.hh>
-
-#include <cctype>
+#include <lzw_filter_base.hh>
 
 #include <map>
 #include <string>
 
-#include <boost/iostreams/concepts.hpp>
-
 namespace ypdf::iostreams {
 
-struct lzw_output_filter_t
-    : ::boost::iostreams::output_filter, lzw_filter_base_t
+struct lzw_output_filter_t : ::boost::iostreams::output_filter, lzw_filter_base_t
 {
-    explicit lzw_output_filter_t() : table(make_table()), header{ } {  }
+    explicit lzw_output_filter_t() : table(make_table()) { }
 
     template< typename Sink >
-    bool put(Sink &dst, char c) {
-        if (!header) {
-            namespace bios = ::boost::iostreams;
-
-            bios::put(dst, 0x1F);
-            bios::put(dst, 0x9D);
-            bios::put(dst, 0x80 | max_bits);
-
-            header = true;
-        }
-
+    bool put(Sink &dst, char c)
+    {
         string += c;
 
         if (table.end() == table.find(string)) {
@@ -39,12 +26,21 @@ struct lzw_output_filter_t
                 table[string] = next++;
 
             string.pop_back();
-            do_put(table.at(string), bits);
 
+            do_put(table.at(string), bits);
             flush(dst);
 
-            if (bits < max_bits && (1UL << bits) < next)
-                ++bits;
+            if ((1UL << bits) < next) {
+                if (++bits > max_bits) {
+                    do_put(clear_code, max_bits);
+                    flush(dst);
+
+                    table = make_table();
+
+                    bits = min_bits;
+                    next = first_code;
+                }
+            }
 
             string = c;
         }
@@ -57,14 +53,14 @@ struct lzw_output_filter_t
         if (!string.empty())
             do_put(table.at(string), bits);
 
+        do_put(eod_code, bits);
         purge(dst);
-
-        reset();
     }
 
 private:
     static std::map< std::string, size_t >
-    make_table() {
+    make_table()
+    {
         std::map< std::string, size_t > table;
 
         for (size_t i = 0; i < 256; ++i)
@@ -73,13 +69,15 @@ private:
         return table;
     }
 
-    void do_put(size_t value, size_t bits) {
+    void do_put(size_t value, size_t bits)
+    {
         buf |= (value << ((sizeof buf << 3) - pending - bits));
         pending += bits;
     }
 
     template< typename Sink >
-    void do_flush(Sink &dst, size_t threshold) {
+    void do_flush(Sink &dst, size_t threshold)
+    {
         for (; pending > threshold; pending -= (std::min)(8UL, pending)) {
             namespace bios = ::boost::iostreams;
 
@@ -91,28 +89,21 @@ private:
     }
 
     template< typename Sink >
-    void flush(Sink &dst) {
+    void flush(Sink &dst)
+    {
         do_flush(dst, 7);
     }
 
     template< typename Sink >
-    void purge(Sink &dst) {
+    void purge(Sink &dst)
+    {
         do_flush(dst, 0);
-    }
-
-    void reset() {
-        lzw_filter_base_t::reset();
-
-        table = make_table();
-
-        string = { };
-        header = { };
     }
 
 private:
     std::map< std::string, size_t > table;
     std::string string;
-    bool header;
+    size_t buf = 0, bits = min_bits, pending = 0, next = first_code;
 };
 
 } // namespace ypdf::iostreams

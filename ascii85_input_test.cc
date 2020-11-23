@@ -21,7 +21,6 @@ namespace data = boost::unit_test::data;
 namespace io = ::boost::iostreams;
 
 #include <ascii85_input_filter.hh>
-#include <container_source.hh>
 
 #define UNUSED(x) ((void)x)
 
@@ -106,7 +105,7 @@ BOOST_DATA_TEST_CASE(input, data::make(input_dataset),
         io::filtering_istream str;
 
         str.push(ypdf::iostreams::ascii85_input_filter_t());
-        str.push(ypdf::iostreams::container_source_t< std::string >(from));
+        str.push(io::array_source(from.c_str(), from.size()));
 
         for (int c; EOF != (c = str.get()); )
             s.append(1, c);

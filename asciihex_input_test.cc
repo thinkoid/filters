@@ -19,7 +19,6 @@ namespace data = boost::unit_test::data;
 namespace io = ::boost::iostreams;
 
 #include <asciihex_input_filter.hh>
-#include <container_source.hh>
 
 #define UNUSED(x) ((void)x)
 
@@ -55,7 +54,7 @@ BOOST_DATA_TEST_CASE(
     io::filtering_istream str;
 
     str.push(ypdf::iostreams::asciihex_input_filter_t());
-    str.push(ypdf::iostreams::container_source_t< std::string >(input));
+    str.push(io::array_source(input.c_str(), input.size()));
 
     std::string buf;
 

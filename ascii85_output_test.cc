@@ -15,11 +15,11 @@ namespace utf = boost::unit_test;
 #include <boost/test/data/monomorphic.hpp>
 namespace data = boost::unit_test::data;
 
+#include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 namespace io = ::boost::iostreams;
 
 #include <ascii85_output_filter.hh>
-#include <container_sink.hh>
 
 #define UNUSED(x) ((void)x)
 
@@ -65,7 +65,7 @@ BOOST_DATA_TEST_CASE(
         io::filtering_ostream str;
 
         str.push(ypdf::iostreams::ascii85_output_filter_t());
-        str.push(ypdf::iostreams::container_sink_t< std::string >(buf));
+        str.push(io::back_insert_device< std::string >(buf));
 
         for (auto c : output)
             str.put(c);
